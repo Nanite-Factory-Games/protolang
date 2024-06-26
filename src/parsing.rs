@@ -64,7 +64,7 @@ peg::parser!{
             = name:variable_name() ":" optional_whitespace() ty:ty() {Parameter{name, ty}} / expected!("parameter")
         
         rule ret() -> Type
-            = "->" ty:ty() {ty} / expected!("function return")
+            = "->" optional_whitespace() ty:ty() {ty} / expected!("function return")
         
         // Definitions
         rule module_def() -> String

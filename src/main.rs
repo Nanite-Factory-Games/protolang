@@ -10,6 +10,9 @@ struct Args {
     /// The path to search for files to compile
     #[arg()]
     path: PathBuf,
+
+    #[arg(long, default_value = "./build")]
+    output: PathBuf
 }
 
 fn main() -> anyhow::Result<()> {
@@ -17,11 +20,20 @@ fn main() -> anyhow::Result<()> {
 
     let files = fs::read_dir(args.path)?;
     
+    let mut parsed_files = Vec::new();
     for file in files {
         let file = file?;
         let parsed_file = protolang_file(fs::read_to_string(file.path())?.as_str())?;
-        dbg!(parsed_file);
+        parsed_files.push(parsed_file);
     }
+
+    let output_folder = args.output.join("rust");
+
+    fs::create_dir_all(&output_folder)?;
+
+    protolang::writer::rust::write_files(&output_folder, &parsed_files)?;
+
+
 
     Ok(())
 }
