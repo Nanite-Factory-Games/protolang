@@ -2,7 +2,7 @@ use std::{fs, path::PathBuf};
 
 use anyhow::Ok;
 use clap::Parser;
-use protolang::parsing::program::protolang_file;
+use protolang::{parsing::program::protolang_file, writer::WRITERS};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -27,13 +27,12 @@ fn main() -> anyhow::Result<()> {
         parsed_files.push(parsed_file);
     }
 
-    let output_folder = args.output.join("rust");
-
-    fs::create_dir_all(&output_folder)?;
-
-    protolang::writer::rust::write_files(&output_folder, &parsed_files)?;
-
-
+    for (language, writer) in WRITERS.entries() {
+        println!("Writing {} files", language);
+        let output_folder = args.output.join(language);
+        fs::create_dir_all(&output_folder)?;
+        writer(&output_folder, &parsed_files)?;
+    }
 
     Ok(())
 }
